@@ -1,4 +1,4 @@
-local async = require './'
+local async = require './async'
 local table = require 'table'
 local string = require 'string'
 local math = require 'math'
