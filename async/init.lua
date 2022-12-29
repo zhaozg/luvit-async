@@ -13,7 +13,7 @@ async.forEach = function(arr, iterator, callback)
     return timer.setImmediate(callback)
   end
   local completed = 0
-  for i=1,#arr do
+  for i = 1, #arr do
     local elem = arr[i]
     iterator(elem, function(err)
       if err then
@@ -155,7 +155,7 @@ end
 local _asyncMap = function(eachfn, arr, iterator, callback)
   local results = {}
   arr = _map(arr, function(x, i)
-    return {index=i, value=x}
+    return { index = i, value = x }
   end)
   return eachfn(arr, function(x, callback)
     return iterator(x.value, function(err, v)
@@ -174,7 +174,7 @@ async.mapSeries = doSeries(_asyncMap)
 local _filter = function(eachfn, arr, iterator, callback)
   local results = {}
   arr = _map(arr, function(x, i)
-   return {index=i, value=x}
+    return { index = i, value = x }
   end)
   return eachfn(arr, function(x, callback)
     return iterator(x.value, function(v)
@@ -202,7 +202,7 @@ async.filterSeries = doSeries(_filter)
 local _reject = function(eachfn, arr, iterator, callback)
   local results = {}
   arr = _map(arr, function(x, i)
-    return {index=i, value=x}
+    return { index = i, value = x }
   end)
   return eachfn(arr, function(x, callback)
     return iterator(x.value, function(v)
@@ -229,14 +229,14 @@ async.rejectSeries = doSeries(_reject)
 local _detect = function(eachfn, arr, iterator, main_callback)
   return eachfn(arr, function(x, callback)
     return iterator(x, function(result)
-        if result then
-          local cb = main_callback
-          main_callback = function() end
-          return cb(x)
-        end
-        return callback()
-      end, function(err)
-        return main_callback()
+      if result then
+        local cb = main_callback
+        main_callback = function() end
+        return cb(x)
+      end
+      return callback()
+    end, function(err)
+      return main_callback()
     end)
   end)
 end
@@ -252,9 +252,9 @@ async.sortBy = function(arr, iterator, callback)
       if err then
         return callback(err)
       end
-      return callback(nil, {value=x, criteria=criteria})
+      return callback(nil, { value = x, criteria = criteria })
     end)
-  end, function (err, results)
+  end, function(err, results)
     if err then
       return callback(err)
     end
@@ -325,17 +325,17 @@ async.all = async.every
 -- Note: In Lua, the function table.concat() is equivalent
 -- to JavaScript's array.join(). Hence, the following function
 -- is called copy().
-table.copy = function( t, ... )
-  local copyShallow = function( src, dst, dstStart )
+table.copy = function(t, ...)
+  local copyShallow = function(src, dst, dstStart)
     local result = dst or {}
     local resultStart = 0
     if dst and dstStart then
       resultStart = dstStart
     end
     local resultLen = 0
-    if "table" == type( src ) then
+    if "table" == type(src) then
       resultLen = #src
-      for i=1,resultLen do
+      for i = 1, resultLen do
         local value = src[i]
         if nil ~= value then
           result[i + resultStart] = value
@@ -345,14 +345,14 @@ table.copy = function( t, ... )
         end
       end
     end
-    return result,resultLen
+    return result, resultLen
   end
 
-  local result, resultStart = copyShallow( t )
+  local result, resultStart = copyShallow(t)
 
   local srcs = { ... }
-  for i=1,#srcs do
-    local _,len = copyShallow( srcs[i], result, resultStart )
+  for i = 1, #srcs do
+    local _, len = copyShallow(srcs[i], result, resultStart)
     resultStart = resultStart + len
   end
 
@@ -411,7 +411,7 @@ async.series = function(tasks, callback)
     return async.mapSeries(tasks, function(fn, callback)
       if fn then
         return fn(function(err, ...)
-          return callback(err, unpack({...}))
+          return callback(err, unpack({ ... }))
         end)
       end
     end, callback)
@@ -424,7 +424,7 @@ async.series = function(tasks, callback)
   end
   return async.forEachSeries(_keys, function(k, callback)
     tasks[k](function(err, ...)
-      results[k] = {...}
+      results[k] = { ... }
       return callback(err)
     end)
   end, function(err)
@@ -446,7 +446,7 @@ async.iterator = function(tasks)
     end
     it.run = function(...)
       if #tasks > 0 then
-        tasks[index](unpack({...}))
+        tasks[index](unpack({ ... }))
       end
       return it.Next()
     end
@@ -470,7 +470,7 @@ async.waterfall = function(tasks, callback)
         return timer.setImmediate(function() cb(err) end)
       end
 
-      local args = {...}
+      local args = { ... }
       local _next = iterator.Next()
       if _next then
         table.insert(args, wrapIterator(_next))
@@ -491,7 +491,7 @@ async.parallel = function(tasks, callback)
   return async.map(tasks, function(fn, callback)
     if fn then
       return fn(function(err, ...)
-        return callback(err, {...})
+        return callback(err, { ... })
       end)
     end
   end, callback)
@@ -521,7 +521,7 @@ async.queue = function(worker, concurrency)
       return worker(task.data, function(...)
         workers = workers - 1
         if task.callback then
-          task.callback(unpack({...}))
+          task.callback(unpack({ ... }))
         end
         if q.drain and (q.length() + workers) == 0 then
           q.drain()
